@@ -1,0 +1,101 @@
+name: "Deploy MFE to PPrd Environment"
+description: "Deploying MFE to PPrd environment ..."
+inputs:
+  aws-access-key-id:
+    description: 'AWS Access Key Id'
+    required: true
+
+  aws-secret-access-key:
+    description: 'AWS Secret Access Key'
+    required: true
+
+  aws-region:
+    description: 'AWS Resource Region'
+    required: true
+
+  submodules-pat-token:
+    description: 'Submodule PAT Token'
+    required: true
+
+  new-relic-api-key:
+    description: 'New Relic API Key'
+    required: true
+
+  new-relic-account-id:
+    description: 'New Relic Account Id'
+    required: true
+
+  new-relic-application-id:
+    description: 'New Relic Application Id'
+    required: true
+
+  new-relic-region:
+    description: 'New Relic Region'
+    required: true
+
+  source-ecr:
+    description: 'The source ECR'
+    required: true
+
+  destination-ecr:
+    description: 'The destination ECR'
+    required: true
+
+runs:
+  using: "composite"
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        token: ${{ secrets.SUBMODULE_PAT_TOKEN }}
+        submodules: 'true'
+    - uses: benjlevesque/short-sha@v1.2
+      id: short-sha
+       with:
+        length: 7
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: eu-west-2
+    - name: Pull and tag image from previous environment
+      env:
+        GIT_SHA: ${{ steps.short-sha.outputs.sha }}
+      working-directory: ./mfe-infrastructure/ci
+      run: |
+        aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ env.SOURCE_ECR }}"
+        docker pull ${{ env.SOURCE_ECR}}:${{ env.GIT_SHA }}
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Promote image from previous environment
+      env:
+        DESTINATION_ECR: '640149164213.dkr.ecr.eu-west-2.amazonaws.com/pprd-age-search-mfe'
+        GIT_SHA: ${{ steps.short-sha.outputs.sha }}
+      working-directory: ./mfe-infrastructure/ci
+      run: |
+        docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
+        docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:latest"
+        docker image push "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
+        docker image push "${{ inputs.destination-ecr }}:latest"
+    - uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.14.7
+    - name: Deploy MFE
+      env:
+        GIT_SHA: ${{ steps.short-sha.outputs.sha }}
+      working-directory: ./mfe-infrastructure/ci
+      run: ./deploy.sh search-mfe ${{ env.GIT_SHA }} pprd
+    - name: Create New Relic deployment marker
+      uses: newrelic/deployment-marker-action@v1
+      env:
+        GIT_SHA: ${{ steps.short-sha.outputs.sha }}
+      with:
+        apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+        accountId: ${{ inputs.new-relic-account-id }}
+        applicationId: ${{ inputs.new-application-id }}
+        revision: '${{ env.GIT_SHA }}'
+        changelog: 'See https://github.com/${{ github.repository }}/commit/${{ env.GIT_SHA }} for changes.'
+        description: ${{ github.event.head_commit.message }}
+        region: ${{ inputs.new-relic-region}}
+        user: '${{ github.actor }}'
