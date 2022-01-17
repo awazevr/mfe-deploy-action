@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/awazevr/mfe-deploy-pprd-action/compare/v1.0.1...v1.0.2) (2022-01-17)
+
+
+### Bug Fixes
+
+* **MFE-3:** renoved hard-coded destination ecr as it is now an input parameter ([7967b68](https://github.com/awazevr/mfe-deploy-pprd-action/commit/7967b682dd2c8b9c73f0c60d48a5ce79f71c2428))
+
 ## [1.0.1](https://github.com/awazevr/mfe-deploy-pprd-action/compare/v1.0.0...v1.0.1) (2022-01-17)
 
 
