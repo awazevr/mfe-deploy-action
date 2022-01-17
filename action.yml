@@ -74,7 +74,6 @@ runs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Promote image from previous environment
       env:
-        DESTINATION_ECR: '640149164213.dkr.ecr.eu-west-2.amazonaws.com/pprd-age-search-mfe'
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
       run: |
