@@ -84,6 +84,8 @@ jobs:
         uses: awazevr/mfe-deploy-action@v1.0.0
         with:
           app-name: search-mfe
+          deploy-environment: dev
+          is-initial-environment: true
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
@@ -92,7 +94,6 @@ jobs:
           new-relic-region: ${{ secrets.NEW_RELIC_REGION }}
           new-relic-application-id: ${{ secrets.NEW_RELIC_APPLICATION_ID }}
           new-relic-account-id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
-          is-initial-environment: true
           
   deploy_pprd:
     environment: pprd
@@ -103,6 +104,7 @@ jobs:
         uses: awazevr/mfe-deploy-action@v1.0.0
         with:
           app-name: search-mfe
+          deploy-environment: pprd
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
