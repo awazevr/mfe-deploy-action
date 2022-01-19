@@ -1,5 +1,5 @@
-# mfe-deploy-pprd-action
-This is a GitHub Action meant to be used as a [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) within an existing workflow. This action encapsulates setting up a downloads the artifacts from the build process and publishes to S3 in one step. 
+# mfe-deploy-action
+This is a GitHub Action meant to be used as a [composite action](https://docs.github.com/en/actions/creating-actions/creating-a-composite-action) within an existing workflow. This action encapsulates the steps necessary to deploy an Awaze MFE.
 
 The action encapsulates the following other actions:
 
@@ -19,7 +19,7 @@ The action encapsulates the following other actions:
 
 **Required** The associated AWS Secret Access Key for a given AWS Account. 
 
-### `submodules_pat_token`
+### `submodules_pat`
 
 **Required** The PAT Access token required to access the submodules repository.
 
@@ -43,8 +43,13 @@ The action encapsulates the following other actions:
 
 **Required** Specifies the New Relic account to use.
 
+### `is-initial-environment`
 
+**Required** Specifies if the environment you're deploying to is your first environment (e.g. dev), determines if ECR 'promote from previous environment' steps need to be run or not.
 
+### `app-name`
+
+**Required** The programatic name of your MFE
 
 ## Usage
 You can use this composite Action in your own workflow by adding:
@@ -54,28 +59,48 @@ name: search-mfe-composite
 
 on:
   push:
-    branches: [ feature/MFE-3 ]
-  # pull_request:
-  #   branches: [ master ]
+    branches: [ main ]
 
   workflow_dispatch:
 
 jobs:
-  build_and_push_image:
-    environment: feature
-    env:
-      ECR_REPOSITORY: dev-age-search-mfe
+  deploy_dev:
+    environment: dev
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout, Build and Push Docker Image
-        uses: awazevr/docker-build-push-action@v1.0.20
+      - name: Deploy dev
+        uses: awazevr/mfe-deploy-action@v1.0.0
         with:
+          app-name: search-mfe
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
-          bit-token: ${{ secrets.BIT_TOKEN }}
-          pat-token: ${{ secrets.PAT_TOKEN}}
+          submodules-pat: ${{ secrets.SUBMODULE_PAT }}
+          new-relic-api-key: ${{ secrets.NEW_RELIC_API_KEY }}
+          new-relic-region: ${{ secrets.NEW_RELIC_REGION }}
+          new-relic-application-id: ${{ secrets.NEW_RELIC_APPLICATION_ID }}
+          new-relic-account-id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          is-initial-environment: true
+          
+  deploy_pprd:
+    environment: pprd
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy pprd
+        uses: awazevr/mfe-deploy-action@v1.0.0
+        with:
+          app-name: search-mfe
+          is-initial-environment: false
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+          submodules-pat: ${{ secrets.SUBMODULE_PAT }}
+          new-relic-api-key: ${{ secrets.NEW_RELIC_API_KEY }}
+          new-relic-region: ${{ secrets.NEW_RELIC_REGION }}
+          new-relic-application-id: ${{ secrets.NEW_RELIC_APPLICATION_ID }}
+          new-relic-account-id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
 
 ```
 
