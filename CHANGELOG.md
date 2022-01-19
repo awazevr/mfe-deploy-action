@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.3...v1.0.4) (2022-01-19)
+
+
+### Bug Fixes
+
+* Update action name ([e5d5022](https://github.com/awazevr/mfe-deploy-action/commit/e5d5022036ff22b85f9b10c7a922ee9d7b0cce00))
+
 ## [1.0.3](https://github.com/awazevr/mfe-deploy-pprd-action/compare/v1.0.2...v1.0.3) (2022-01-19)
 
 
