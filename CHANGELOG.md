@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/awazevr/mfe-deploy-pprd-action/compare/v1.0.2...v1.0.3) (2022-01-19)
+
+
+### Bug Fixes
+
+* **MFE-6:** Refactor to make environment and mfe agnostic ([7e4620c](https://github.com/awazevr/mfe-deploy-pprd-action/commit/7e4620cfab08b72b0bb46a09f0ad9b5823e2d100))
+
 ## [1.0.2](https://github.com/awazevr/mfe-deploy-pprd-action/compare/v1.0.1...v1.0.2) (2022-01-17)
 
 
