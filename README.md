@@ -43,13 +43,24 @@ The action encapsulates the following other actions:
 
 **Required** Specifies the New Relic account to use.
 
-### `is-initial-environment`
-
-**Required** Specifies if the environment you're deploying to is your first environment (e.g. dev), determines if ECR 'promote from previous environment' steps need to be run or not.
-
 ### `app-name`
 
 **Required** The programatic name of your MFE
+
+### `is-initial-environment`
+
+Specifies if the environment you're deploying to is your first environment (e.g. dev), determines if ECR 'promote from previous environment' steps need to be run or not.
+
+### `source-ecr`
+
+If you're promoting from a previous environment (e.g. dev -> pprd), the ECR repo that contains the image you wish to promote.
+
+### `destination-ecr`
+
+If you're promoting from a previous environment (e.g. dev -> pprd), the ECR repo that you wish to promote the image to.
+
+
+
 
 ## Usage
 You can use this composite Action in your own workflow by adding:
@@ -92,7 +103,6 @@ jobs:
         uses: awazevr/mfe-deploy-action@v1.0.0
         with:
           app-name: search-mfe
-          is-initial-environment: false
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
@@ -101,6 +111,8 @@ jobs:
           new-relic-region: ${{ secrets.NEW_RELIC_REGION }}
           new-relic-application-id: ${{ secrets.NEW_RELIC_APPLICATION_ID }}
           new-relic-account-id: ${{ secrets.NEW_RELIC_ACCOUNT_ID }}
+          source-ecr: 12345678.dkr.ecr.eu-west-2.amazonaws.com/mfe-repo
+          destination-ecr: 87654321.dkr.ecr.eu-west-2.amazonaws.com/mfe-repo
 
 ```
 
