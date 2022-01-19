@@ -1,3 +1,10 @@
+## [1.0.7](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.6...v1.0.7) (2022-01-19)
+
+
+### Bug Fixes
+
+* More indentation issues ([7c0919d](https://github.com/awazevr/mfe-deploy-action/commit/7c0919dff8109d9f8e4d99363ed3102bd6ab2aa8))
+
 ## [1.0.6](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.5...v1.0.6) (2022-01-19)
 
 
