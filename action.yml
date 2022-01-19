@@ -1,5 +1,5 @@
-name: "Deploy MFE to PPrd Environment"
-description: "Deploying MFE to PPrd environment ..."
+name: "Deploy MFE"
+description: "Deploy MFE to specified environment."
 inputs:
   aws-access-key-id:
     description: 'AWS Access Key Id'
@@ -13,8 +13,8 @@ inputs:
     description: 'AWS Resource Region'
     required: true
 
-  submodules-pat-token:
-    description: 'Submodule PAT Token'
+  submodules-pat:
+    description: 'Submodule personal access token'
     required: true
 
   new-relic-api-key:
@@ -44,35 +44,50 @@ inputs:
   deploy-environment:
     description: 'The AWS deployment environment account '
     required: true
+    
+  is-initial-environment:
+    description: 'Is a deployment to the initial environment (true/false)'
+    required: true
+  
+  app-name:
+    description: 'MFE app name (e.g. search-mfe, property-details-mfe)'
+    required: true
 
 runs:
   using: "composite"
     steps:
     - uses: actions/checkout@v2
       with:
-        token: ${{ secrets.SUBMODULE_PAT_TOKEN }}
+        token: ${{ inputs.submodule-pat }}
         submodules: 'true'
     - uses: benjlevesque/short-sha@v1.2
       id: short-sha
        with:
         length: 7
+     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-access-key-id: ${{ inputs.aws-access-key-id }}
+        aws-secret-access-key: ${{ inputs.aws-secret-access-key }}
         aws-region: eu-west-2
+        
     - name: Pull and tag image from previous environment
+      if: ${{ inputs.is-initial-environment !== 'true' }}
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
       run: |
         aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ env.SOURCE_ECR }}"
         docker pull ${{ env.SOURCE_ECR}}:${{ env.GIT_SHA }}
+        
     - name: Login to Amazon ECR
+      if: ${{ inputs.is-initial-environment !== 'true' }}
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+      
     - name: Promote image from previous environment
+      if: ${{ inputs.is-initial-environment !== 'true' }}
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
@@ -81,20 +96,23 @@ runs:
         docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:latest"
         docker image push "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
         docker image push "${{ inputs.destination-ecr }}:latest"
+        
     - uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: 0.14.7
+        
     - name: Deploy MFE
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
-      run: ./deploy.sh search-mfe ${{ env.GIT_SHA }} {{ inputs.deploy-environment }}
+      run: ./deploy.sh ${{ inputs.app-name }} ${{ env.GIT_SHA }} {{ inputs.deploy-environment }}
+      
     - name: Create New Relic deployment marker
       uses: newrelic/deployment-marker-action@v1
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       with:
-        apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+        apiKey: ${{ inputs.new-relic-api-key }}
         accountId: ${{ inputs.new-relic-account-id }}
         applicationId: ${{ inputs.new-application-id }}
         revision: '${{ env.GIT_SHA }}'
