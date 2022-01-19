@@ -55,7 +55,7 @@ inputs:
 
 runs:
   using: "composite"
-    steps:
+  steps:
     - uses: actions/checkout@v2
       with:
         token: ${{ inputs.submodules-pat }}
