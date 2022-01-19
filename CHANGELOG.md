@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.4...v1.0.5) (2022-01-19)
+
+
+### Bug Fixes
+
+* **MFE-6:** Update input descriptions and required flags ([26a96c4](https://github.com/awazevr/mfe-deploy-action/commit/26a96c430fd0511833c9d3c385cf982d1f8116aa))
+
 ## [1.0.4](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.3...v1.0.4) (2022-01-19)
 
 
