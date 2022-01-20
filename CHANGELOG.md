@@ -1,3 +1,10 @@
+## [1.0.10](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.9...v1.0.10) (2022-01-20)
+
+
+### Bug Fixes
+
+* new relic application id invalid reference ([bcae805](https://github.com/awazevr/mfe-deploy-action/commit/bcae80587562144892c55a1b2f4f6e958da8edab))
+
 ## [1.0.9](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.8...v1.0.9) (2022-01-20)
 
 
