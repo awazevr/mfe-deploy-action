@@ -1,3 +1,10 @@
+## [1.0.13](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.12...v1.0.13) (2022-01-20)
+
+
+### Bug Fixes
+
+* Revert unnecessary guard on promote steps ([2d7d998](https://github.com/awazevr/mfe-deploy-action/commit/2d7d9988de1e39bb6a2a289cf3196b6b5e030e33))
+
 ## [1.0.12](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.11...v1.0.12) (2022-01-20)
 
 
