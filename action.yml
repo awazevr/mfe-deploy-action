@@ -52,6 +52,10 @@ inputs:
   destination-ecr:
     description: 'If promoting from a previous environment, the ECR repository to promote to'
     required: false
+    
+  git-sha:
+    description: 'To deploy a specific git sha (e.g. for rollback), specify the short (7 char) git sha. The image must still be available in the relevant environment ECR.'
+    required: false
 
 runs:
   using: "composite"
@@ -73,7 +77,7 @@ runs:
         aws-region: ${{ inputs.aws-region }}
         
     - name: Pull and tag image from previous environment
-      if: inputs.is-initial-environment != 'true'
+      if: inputs.is-initial-environment != 'true' && inputs.git-sha == "" 
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
@@ -83,12 +87,12 @@ runs:
         docker pull ${{ inputs.source-ecr }}:${{ env.GIT_SHA }}
         
     - name: Login to Amazon ECR
-      if: inputs.is-initial-environment != 'true'
+      if: inputs.is-initial-environment != 'true' && inputs.git-sha == "" 
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       
     - name: Promote image from previous environment
-      if: inputs.is-initial-environment != 'true'
+      if: inputs.is-initial-environment != 'true' && inputs.git-sha == "" 
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
@@ -108,7 +112,7 @@ runs:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
       shell: bash
-      run: ./deploy.sh ${{ inputs.app-name }} ${{ env.GIT_SHA }} ${{ inputs.deploy-environment }}
+      run: ./deploy.sh ${{ inputs.app-name }} ${{ inputs.git-sha || env.GIT_SHA }} ${{ inputs.deploy-environment }}
       
     - name: Create New Relic deployment marker
       uses: newrelic/deployment-marker-action@v1
