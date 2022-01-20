@@ -73,24 +73,26 @@ runs:
         aws-region: ${{ inputs.aws-region }}
         
     - name: Pull and tag image from previous environment
-      if: ${{ inputs.is-initial-environment !== 'true' }}
+      if: inputs.is-initial-environment != 'true'
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
+      shell: bash
       run: |
         aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ env.SOURCE_ECR }}"
         docker pull ${{ env.SOURCE_ECR}}:${{ env.GIT_SHA }}
         
     - name: Login to Amazon ECR
-      if: ${{ inputs.is-initial-environment !== 'true' }}
+      if: inputs.is-initial-environment != 'true'
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
       
     - name: Promote image from previous environment
-      if: ${{ inputs.is-initial-environment !== 'true' }}
+      if: inputs.is-initial-environment != 'true'
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
+      shell: bash
       run: |
         docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
         docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:latest"
@@ -105,6 +107,7 @@ runs:
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       working-directory: ./mfe-infrastructure/ci
+      shell: bash
       run: ./deploy.sh ${{ inputs.app-name }} ${{ env.GIT_SHA }} {{ inputs.deploy-environment }}
       
     - name: Create New Relic deployment marker
