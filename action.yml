@@ -117,7 +117,7 @@ runs:
       with:
         apiKey: ${{ inputs.new-relic-api-key }}
         accountId: ${{ inputs.new-relic-account-id }}
-        applicationId: ${{ inputs.new-application-id }}
+        applicationId: ${{ inputs.new-relic-application-id }}
         revision: '${{ env.GIT_SHA }}'
         changelog: 'See https://github.com/${{ github.repository }}/commit/${{ env.GIT_SHA }} for changes.'
         description: ${{ github.event.head_commit.message }}
