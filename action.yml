@@ -79,8 +79,8 @@ runs:
       working-directory: ./mfe-infrastructure/ci
       shell: bash
       run: |
-        aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ env.SOURCE_ECR }}"
-        docker pull ${{ env.SOURCE_ECR}}:${{ env.GIT_SHA }}
+        aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ inputs.source-ecr }}"
+        docker pull ${{ inputs.source-ecr }}:${{ env.GIT_SHA }}
         
     - name: Login to Amazon ECR
       if: inputs.is-initial-environment != 'true'
