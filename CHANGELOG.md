@@ -1,3 +1,10 @@
+## [1.0.11](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.10...v1.0.11) (2022-01-20)
+
+
+### Bug Fixes
+
+* reference inputs rather than missing env for promote ([773efe1](https://github.com/awazevr/mfe-deploy-action/commit/773efe1eb165335cdc773afa2eab53b06e94ec0d))
+
 ## [1.0.10](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.9...v1.0.10) (2022-01-20)
 
 
