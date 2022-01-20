@@ -1,3 +1,10 @@
+## [1.0.8](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.7...v1.0.8) (2022-01-20)
+
+
+### Bug Fixes
+
+* More syntax errors ([b7ef8fc](https://github.com/awazevr/mfe-deploy-action/commit/b7ef8fc43f39d21452ca47fff9f65701985a5d62))
+
 ## [1.0.7](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.6...v1.0.7) (2022-01-19)
 
 
