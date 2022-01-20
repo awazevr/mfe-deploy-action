@@ -1,3 +1,10 @@
+## [1.0.12](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.11...v1.0.12) (2022-01-20)
+
+
+### Bug Fixes
+
+* Add git-sha as optional input ([52b3337](https://github.com/awazevr/mfe-deploy-action/commit/52b33373cc8a00c46953297fc1b891aea26c5419))
+
 ## [1.0.11](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.10...v1.0.11) (2022-01-20)
 
 
