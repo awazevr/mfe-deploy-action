@@ -1,3 +1,10 @@
+## [1.0.9](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.8...v1.0.9) (2022-01-20)
+
+
+### Bug Fixes
+
+* environment input not being correctly templated ([b2ebb54](https://github.com/awazevr/mfe-deploy-action/commit/b2ebb5423a17f449def237fd3c93a7c5ca970157))
+
 ## [1.0.8](https://github.com/awazevr/mfe-deploy-action/compare/v1.0.7...v1.0.8) (2022-01-20)
 
 
