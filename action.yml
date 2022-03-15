@@ -78,7 +78,6 @@ runs:
       if: inputs.is-initial-environment != 'true'
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
-      working-directory: ./mfe-infrastructure/ci
       shell: bash
       run: |
         aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ inputs.source-ecr }}"
@@ -93,7 +92,6 @@ runs:
       if: inputs.is-initial-environment != 'true'
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
-      working-directory: ./mfe-infrastructure/ci
       shell: bash
       run: |
         docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
@@ -108,7 +106,6 @@ runs:
     - name: Deploy MFE
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
-      working-directory: ./mfe-infrastructure/ci
       shell: bash
       run: ./deploy.sh ${{ inputs.app-name }} ${{ inputs.git-sha || env.GIT_SHA }} ${{ inputs.deploy-environment }}
       
