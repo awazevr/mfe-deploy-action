@@ -47,7 +47,7 @@ inputs:
 
   destination-ecr:
     description: 'If promoting from a previous environment, the ECR repository to promote to'
-    required: false
+    required: true
     
   git-sha:
     description: 'To deploy a specific git sha (e.g. for rollback), specify the short (7 char) git sha. The image must still be available in the relevant environment ECR.'
@@ -103,20 +103,29 @@ runs:
       with:
         terraform_version: 0.14.7
         
-    - name: Deploy MFE
-      env:
-        GIT_SHA: ${{ steps.short-sha.outputs.sha }}
+    - name: Fetch Task Definition
       shell: bash
-# ./deploy.sh ${{ inputs.app-name }} ${{ inputs.git-sha || env.GIT_SHA }} ${{ inputs.deploy-environment }}
       run: |
-        GIT_SHA="${{ inputs.git-sha || env.GIT_SHA }}"
-        echo "Preparing to deploy ${{ inputs.app-name }} version $GIT_HASH to ${{ inputs.deploy-environment }}"
-
         TASK_DEFINITION_ARN=(aws ecs list-task-definitions --family-prefix dev-checkout-mfe --sort DESC | jq '.taskDefinitionArns[0]')
-        aws ecs describe-task-definition --task-definition "arn:aws:ecs:eu-west-2:072814172821:task-definition/dev-checkout-mfe:1" > task-definition.json
-
-        #cat task-definition.json | jq '.taskDefinition.containerDefinitions[0].image' | sed 's/ecr\.[\w\d-]+\.amazonaws\.com\/[\w\d-]*:([\w\d]+)/
+        aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_ARN" > task-definition.json
       
+    - name: Update Task Definition
+      id: update-task-definition
+      uses: aws-actions/amazon-ecs-render-task-definition
+      with:
+        task-definition: task-definition.json
+        container-name: dev-checkout-mfe
+        image: "${{ inputs.destination-ecr}}:${{ steps.short-sha.outputs.sha }}"
+        #environment-variables
+
+    - name: Deploy to Amazon ECS service
+      users: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
+        service: dev-checkout-mfe
+        cluster: dev-ecs-fargate
+        wait-for-service-stability: ${{ inputs.deploy-environment != 'dev' }}
+    
     - name: Create New Relic deployment marker
       uses: newrelic/deployment-marker-action@v1
       env:
