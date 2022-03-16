@@ -106,7 +106,7 @@ runs:
     - name: Fetch Task Definition
       shell: bash
       run: |
-        TASK_DEFINITION_ARN=(aws ecs list-task-definitions --family-prefix dev-checkout-mfe --sort DESC | jq '.taskDefinitionArns[0]')
+        TASK_DEFINITION_ARN=$(aws ecs list-task-definitions --family-prefix dev-checkout-mfe --sort DESC | jq '.taskDefinitionArns[0]')
         aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_ARN" > task-definition.json
       
     - name: Update Task Definition
