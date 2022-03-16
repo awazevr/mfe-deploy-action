@@ -111,7 +111,7 @@ runs:
       
     - name: Update Task Definition
       id: update-task-definition
-      uses: aws-actions/amazon-ecs-render-task-definition
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: task-definition.json
         container-name: dev-checkout-mfe
