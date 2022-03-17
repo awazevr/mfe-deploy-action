@@ -45,8 +45,8 @@ inputs:
     description: 'If promoting from a previous environment, the ECR repository to promote from'
     required: false
 
-  destination-ecr:
-    description: 'If promoting from a previous environment, the ECR repository to promote to'
+  ecr-url:
+    description: 'URL of the MFE application ECR repository to in the account to deploy to'
     required: true
     
   git-sha:
@@ -106,16 +106,15 @@ runs:
     - name: Fetch Task Definition
       shell: bash
       run: |
-        TASK_DEFINITION_ARN=$(aws ecs list-task-definitions --family-prefix dev-checkout-mfe --sort DESC | jq -r '.taskDefinitionArns[0]')
+        TASK_DEFINITION_ARN=$(aws ecs list-task-definitions --family-prefix "${{ inputs.deploy-environment }}-${{ inputs.app-name }}" --sort DESC | jq -r '.taskDefinitionArns[0]')
         aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_ARN" | jq '.taskDefinition' > task-definition.json
-        cat task-definition.json
       
     - name: Update Task Definition
       id: update-task-definition
       uses: aws-actions/amazon-ecs-render-task-definition@v1
       with:
         task-definition: task-definition.json
-        container-name: dev-checkout-mfe
+        container-name: "${{ inputs.deploy-environment }}-${{ inputs.app-name }}"
         image: "${{ inputs.destination-ecr}}:${{ steps.short-sha.outputs.sha }}"
         #environment-variables
 
@@ -123,9 +122,9 @@ runs:
       uses: aws-actions/amazon-ecs-deploy-task-definition@v1
       with:
         task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
-        service: dev-checkout-mfe
-        cluster: dev-ecs-fargate
-        wait-for-service-stability: false
+        service: "${{ inputs.deploy-environment }}-${{ inputs.app-name }}"
+        cluster: "${{ inputs.deploy-environment }}-ecs-fargate"
+        wait-for-service-stability: ${{ inputs.deploy-environment != "dev" }}
     
     # - name: Create New Relic deployment marker
     #   uses: newrelic/deployment-marker-action@v1
