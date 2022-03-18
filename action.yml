@@ -2,56 +2,61 @@ name: "Deploy MFE"
 description: "Deploy MFE to specified environment."
 inputs:
   aws-role-to-assume:
-    description: 'ARN of the AWS IAM role to assume'
+    description: "ARN of the AWS IAM role to assume"
     required: true
 
   aws-region:
-    description: 'AWS Resource Region'
+    description: "AWS Resource Region"
     required: true
 
   submodules-pat:
-    description: 'Submodule personal access token'
+    description: "Submodule personal access token"
     required: true
 
   new-relic-api-key:
-    description: 'New Relic API Key'
+    description: "New Relic API Key"
     required: true
 
   new-relic-account-id:
-    description: 'New Relic Account Id'
+    description: "New Relic Account Id"
     required: true
 
   new-relic-application-id:
-    description: 'New Relic Application Id'
+    description: "New Relic Application Id"
     required: true
 
   new-relic-region:
-    description: 'New Relic Region'
+    description: "New Relic Region"
     required: true
 
   deploy-environment:
-    description: 'The AWS deployment environment account '
+    description: "The AWS deployment environment account "
     required: true
-  
+
   app-name:
-    description: 'MFE app name (e.g. search-mfe, property-details-mfe)'
+    description: "MFE app name (e.g. search-mfe, property-details-mfe)"
     required: true
-    
+
   is-initial-environment:
-    description: 'Is a deployment to the initial environment (true/false)'
+    description: "Is a deployment to the initial environment (true/false)"
     required: false
-    
+
   source-ecr:
-    description: 'If promoting from a previous environment, the ECR repository to promote from'
+    description: "If promoting from a previous environment, the ECR repository to promote from"
     required: false
 
   ecr-url:
-    description: 'URL of the MFE application ECR repository to in the account to deploy to'
+    description: "URL of the MFE application ECR repository to in the account to deploy to"
     required: true
-    
+
   git-sha:
-    description: 'To deploy a specific git sha (e.g. for rollback), specify the short (7 char) git sha. The image must still be available in the relevant environment ECR.'
+    description: "To deploy a specific git sha (e.g. for rollback), specify the short (7 char) git sha. The image must still be available in the relevant environment ECR."
     required: false
+
+  inform-new-relic:
+    description: "Whether to inform new relic that the deployment has taken place"
+    required: false
+    default: true
 
 runs:
   using: "composite"
@@ -59,12 +64,12 @@ runs:
     - uses: actions/checkout@v2
       with:
         token: ${{ inputs.submodules-pat }}
-        submodules: 'true'
+        submodules: "true"
     - uses: benjlevesque/short-sha@v1.2
       id: short-sha
       with:
         length: 7
-     
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -73,7 +78,7 @@ runs:
 
     - run: aws sts get-caller-identity
       shell: bash
-        
+
     - name: Pull and tag image from previous environment
       if: inputs.is-initial-environment != 'true'
       env:
@@ -82,12 +87,12 @@ runs:
       run: |
         aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin "${{ inputs.source-ecr }}"
         docker pull ${{ inputs.source-ecr }}:${{ env.GIT_SHA }}
-        
+
     - name: Login to Amazon ECR
       if: inputs.is-initial-environment != 'true'
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
-      
+
     - name: Promote image from previous environment
       if: inputs.is-initial-environment != 'true'
       env:
@@ -98,17 +103,17 @@ runs:
         docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.ecr-url }}:latest"
         docker image push "${{ inputs.ecr-url }}:${{ env.GIT_SHA }}"
         docker image push "${{ inputs.ecr-url }}:latest"
-        
+
     - uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: 0.14.7
-        
+
     - name: Fetch Task Definition
       shell: bash
       run: |
         TASK_DEFINITION_ARN=$(aws ecs list-task-definitions --family-prefix "${{ inputs.deploy-environment }}-${{ inputs.app-name }}" --sort DESC | jq -r '.taskDefinitionArns[0]')
         aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_ARN" | jq '.taskDefinition' > task-definition.json
-      
+
     - name: Update Task Definition
       id: update-task-definition
       uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -125,17 +130,18 @@ runs:
         service: "${{ inputs.deploy-environment }}-${{ inputs.app-name }}"
         cluster: "${{ inputs.deploy-environment }}-ecs-fargate"
         wait-for-service-stability: ${{ inputs.deploy-environment != 'dev' }}
-    
-    # - name: Create New Relic deployment marker
-    #   uses: newrelic/deployment-marker-action@v1
-    #   env:
-    #     GIT_SHA: ${{ steps.short-sha.outputs.sha }}
-    #   with:
-    #     apiKey: ${{ inputs.new-relic-api-key }}
-    #     accountId: ${{ inputs.new-relic-account-id }}
-    #     applicationId: ${{ inputs.new-relic-application-id }}
-    #     revision: '${{ env.GIT_SHA }}'
-    #     changelog: 'See https://github.com/${{ github.repository }}/commit/${{ env.GIT_SHA }} for changes.'
-    #     description: ${{ github.event.head_commit.message }}
-    #     region: ${{ inputs.new-relic-region}}
-    #     user: '${{ github.actor }}'
+
+    - name: Create New Relic deployment marker
+      if: ${{ inputs.inform-new-relic }}
+      uses: newrelic/deployment-marker-action@v1
+      env:
+        GIT_SHA: ${{ steps.short-sha.outputs.sha }}
+      with:
+        apiKey: ${{ inputs.new-relic-api-key }}
+        accountId: ${{ inputs.new-relic-account-id }}
+        applicationId: ${{ inputs.new-relic-application-id }}
+        revision: "${{ env.GIT_SHA }}"
+        changelog: "See https://github.com/${{ github.repository }}/commit/${{ env.GIT_SHA }} for changes."
+        description: ${{ github.event.head_commit.message }}
+        region: ${{ inputs.new-relic-region}}
+        user: "${{ github.actor }}"
