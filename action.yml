@@ -94,10 +94,10 @@ runs:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
       shell: bash
       run: |
-        docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
-        docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.destination-ecr }}:latest"
-        docker image push "${{ inputs.destination-ecr }}:${{ env.GIT_SHA }}"
-        docker image push "${{ inputs.destination-ecr }}:latest"
+        docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.ecr-url }}:${{ env.GIT_SHA }}"
+        docker image tag "${{ inputs.source-ecr }}:${{ env.GIT_SHA }}" "${{ inputs.ecr-url }}:latest"
+        docker image push "${{ inputs.ecr-url }}:${{ env.GIT_SHA }}"
+        docker image push "${{ inputs.ecr-url }}:latest"
         
     - uses: hashicorp/setup-terraform@v1
       with:
@@ -115,7 +115,7 @@ runs:
       with:
         task-definition: task-definition.json
         container-name: "${{ inputs.deploy-environment }}-${{ inputs.app-name }}"
-        image: "${{ inputs.destination-ecr}}:${{ steps.short-sha.outputs.sha }}"
+        image: "${{ inputs.ecr-url}}:${{ steps.short-sha.outputs.sha }}"
         #environment-variables
 
     - name: Deploy to Amazon ECS service
