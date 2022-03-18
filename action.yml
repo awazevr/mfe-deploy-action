@@ -132,7 +132,7 @@ runs:
         wait-for-service-stability: ${{ inputs.deploy-environment != 'dev' }}
 
     - name: Create New Relic deployment marker
-      if: ${{ inputs.inform-new-relic }}
+      if: ${{ inputs.inform-new-relic == 'true'}}
       uses: newrelic/deployment-marker-action@v1
       env:
         GIT_SHA: ${{ steps.short-sha.outputs.sha }}
