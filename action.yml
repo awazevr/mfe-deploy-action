@@ -111,8 +111,23 @@ runs:
     - name: Fetch Task Definition
       shell: bash
       run: |
-        TASK_DEFINITION_ARN=$(aws ecs list-task-definitions --family-prefix "${{ inputs.deploy-environment }}-${{ inputs.app-name }}" --sort DESC | jq -r '.taskDefinitionArns[0]')
-        aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_ARN" | jq '.taskDefinition' > task-definition.json
+        echo 'Fetching latest task definition arn'
+        TASK_DEFINITION_ARN=$(aws ecs list-task-definitions --family-prefix "${{ inputs.deploy-environment }}-${{ inputs.app-name }}" --sort DESC |\
+          jq -r '.taskDefinitionArns[0]')
+        
+        echo 'Fetching task definition'
+        aws ecs describe-task-definition --task-definition "$TASK_DEFINITION_ARN" >  task-definition-intitial.json
+
+        echo 'Cutting task definition down to what the input version should look like'
+        cat task-definition-intitial.json |\
+          jq '.taskDefinition' |\
+          jq 'del(.compatibilities)' |\
+          jq 'del(.taskDefinitionArn)' |\
+          jq 'del(.requiresAttributes)' |\
+          jq 'del(.revision)' |\
+          jq 'del(.status)' |\
+          jq 'del(.registeredAt)' |\
+          jq 'del(.registeredBy)' > task-definition.json
 
     - name: Update Task Definition
       id: update-task-definition
