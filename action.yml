@@ -124,7 +124,7 @@ runs:
         task-definition: ${{ steps.update-task-definition.outputs.task-definition }}
         service: "${{ inputs.deploy-environment }}-${{ inputs.app-name }}"
         cluster: "${{ inputs.deploy-environment }}-ecs-fargate"
-        wait-for-service-stability: ${{ inputs.deploy-environment != "dev" }}
+        wait-for-service-stability: ${{ inputs.deploy-environment != 'dev' }}
     
     # - name: Create New Relic deployment marker
     #   uses: newrelic/deployment-marker-action@v1
